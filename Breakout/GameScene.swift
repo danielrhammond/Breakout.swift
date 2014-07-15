@@ -9,14 +9,26 @@
 import SpriteKit
 
 class GameScene: SKScene {
+    let playerShip = SKSpriteNode(color: UIColor.blueColor(), size: CGSize(width: 200, height: 10)) // SKSpriteNode(imageNamed:"Spaceship")
+    let ball = SKSpriteNode(color: UIColor.redColor(), size: CGSize(width: 20, height: 20))
+    
     override func didMoveToView(view: SKView) {
-        /* Setup your scene here */
-        let myLabel = SKLabelNode(fontNamed:"Chalkduster")
-        myLabel.text = "Hello, World!";
-        myLabel.fontSize = 65;
-        myLabel.position = CGPoint(x:CGRectGetMidX(self.frame), y:CGRectGetMidY(self.frame));
-        
-        self.addChild(myLabel)
+        self.addChild(self.playerShip)
+        self.playerShip.position = CGPoint(x: self.size.width / 2.0, y: 10 )
+        self.addChild(ball)
+        self.physicsBody = SKPhysicsBody(edgeLoopFromRect: self.frame)
+        ball.physicsBody = SKPhysicsBody(circleOfRadius: 10)
+        ball.physicsBody.affectedByGravity = false
+        ball.physicsBody.friction = 0
+        ball.physicsBody.linearDamping = 0
+        ball.physicsBody.restitution = 1
+        ball.physicsBody.usesPreciseCollisionDetection = true
+        playerShip.physicsBody = SKPhysicsBody(rectangleOfSize: playerShip.size)
+        playerShip.physicsBody.dynamic = false
+        playerShip.physicsBody.allowsRotation = false
+        playerShip.physicsBody.restitution = 1
+        ball.position = CGPoint(x: CGRectGetMidX(self.frame), y: CGRectGetMidY(self.frame))
+        ball.physicsBody.applyImpulse(CGVectorMake(0, -10))
     }
     
     override func touchesBegan(touches: NSSet, withEvent event: UIEvent) {
@@ -24,18 +36,10 @@ class GameScene: SKScene {
         
         for touch: AnyObject in touches {
             let location = touch.locationInNode(self)
-            
-            let sprite = SKSpriteNode(imageNamed:"Spaceship")
-            
-            sprite.xScale = 0.5
-            sprite.yScale = 0.5
-            sprite.position = location
-            
-            let action = SKAction.rotateByAngle(CGFloat(M_PI), duration:1)
-            
-            sprite.runAction(SKAction.repeatActionForever(action))
-            
-            self.addChild(sprite)
+            let distanceX = sqrt(pow(location.x - playerShip.position.x, 2))
+            let distanceRatio = distanceX / CGRectGetWidth(self.frame)
+            let movementAction = SKAction.moveToX(location.x, duration: Double(distanceRatio * 2.0) )
+            playerShip.runAction(movementAction)
         }
     }
    
